@@ -6,7 +6,7 @@ cd /d H:\MAMP\htdocs\grant-management
 echo ========================================
 echo   Grant Management Full Auto Sync
 echo ========================================
-echo "Syncing every 4 minutes...";
+echo Syncing every 4 minutes...
 echo   Press Ctrl + C to stop
 echo ========================================
 
@@ -26,7 +26,6 @@ if errorlevel 1 (
 
 git push origin main
 
-timeout /t 60 /nobreak >nul
+timeout /t 240 /nobreak >nul
 
 goto loop
-
