@@ -108,4 +108,9 @@ function langUrl($l) {
 
 // Set variables for use in all pages
 $currentPage = $_GET['page'] ?? 'dashboard';
-define('BASE_URL', rtrim((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME'], 2), '/'));
+
+$docRoot = str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']);
+$projRoot = str_replace('\\', '/', dirname(__DIR__));
+$basePath = str_ireplace($docRoot, '', $projRoot);
+
+define('BASE_URL', rtrim((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . $basePath, '/'));

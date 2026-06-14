@@ -3,8 +3,16 @@ require_once __DIR__ . '/includes/lang.php';
 require_once __DIR__ . '/includes/auth.php';
 
 // If already logged in, redirect to dashboard
-if (isLoggedIn()) {
-    header('Location: ' . roleHome(authRole()));
+if (authUser()) {
+    $userRole = $_SESSION['user']['role'] ?? '';
+    $roleToPath = [
+        'admin' => '/admin/',
+        'researcher' => '/researcher/',
+        'student' => '/student/',
+        'donor' => '/donor/',
+    ];
+    $target = $roleToPath[$userRole] ?? '/';
+    header('Location: ' . BASE_URL . $target);
     exit;
 }
 

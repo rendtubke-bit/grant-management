@@ -3,8 +3,16 @@ require_once __DIR__ . '/includes/lang.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/db.php';
 
-if (isLoggedIn()) {
-    header('Location: ' . roleHome(authRole()));
+if (authUser()) {
+    $userRole = $_SESSION['user']['role'] ?? '';
+    $roleToPath = [
+        'admin' => '/admin/',
+        'researcher' => '/researcher/',
+        'student' => '/student/',
+        'donor' => '/donor/',
+    ];
+    $target = $roleToPath[$userRole] ?? '/';
+    header('Location: ' . BASE_URL . $target);
     exit;
 }
 
@@ -40,13 +48,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($id) {
                 // Auto-login
-                loginUser(['id'=>$id,'name'=>$data['name'],'email'=>$data['email'],'role'=>$data['role']]);
-                header('Location: ' . roleHome($data['role']));
+                $_SESSION['user'] = ['id'=>$id,'name'=>$data['name'],'email'=>$data['email'],'role'=>$data['role']];
+                $roleToPath = [
+                    'admin' => '/admin/',
+                    'researcher' => '/researcher/',
+                    'student' => '/student/',
+                    'donor' => '/donor/',
+                ];
+                $target = $roleToPath[$data['role']] ?? '/';
+                header('Location: ' . BASE_URL . $target);
                 exit;
             } else {
                 // DB not ready — fake success for demo
-                loginUser(['id'=>99,'name'=>$data['name'],'email'=>$data['email'],'role'=>$data['role']]);
-                header('Location: ' . roleHome($data['role']));
+                $_SESSION['user'] = ['id'=>99,'name'=>$data['name'],'email'=>$data['email'],'role'=>$data['role']];
+                $roleToPath = [
+                    'admin' => '/admin/',
+                    'researcher' => '/researcher/',
+                    'student' => '/student/',
+                    'donor' => '/donor/',
+                ];
+                $target = $roleToPath[$data['role']] ?? '/';
+                header('Location: ' . BASE_URL . $target);
                 exit;
             }
         }
