@@ -1,74 +1,61 @@
 <?php
-// includes/auth.php — session-based auth helpers
+/**
+ * Authentication handling for Grant Management System
+ */
+require_once __DIR__ . '/db.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+function authUser() {
+    if (isset($_SESSION['user'])) {
+        return $_SESSION['user'];
+    }
+    // Check for remember token
+    if (isset($_COOKIE['remember_token'])) {
+        $token = $_COOKIE['remember_token'];
+        $user = dbOne("SELECT * FROM users WHERE remember_token = ?", [$token]);
+        if ($user) {
+            $_SESSION['user'] = $user;
+            return $user;
+        }
+    }
+    return null;
 }
 
-// ---------- getters ----------
-
-function authUser(): ?array {
-    return $_SESSION['auth_user'] ?? null;
-}
-
-function authRole(): ?string {
-    return $_SESSION['auth_user']['role'] ?? null;
-}
-
-function isLoggedIn(): bool {
-    return isset($_SESSION['auth_user']);
-}
-
-function isAdmin(): bool {
-    return authRole() === 'admin';
-}
-
-// ---------- gates ----------
-
-function requireLogin(string $redirect = '/login.php'): void {
-    if (!isLoggedIn()) {
-        $base = defined('BASE_URL') ? BASE_URL : '';
-        $url = str_starts_with($redirect, '/') ? $base . $redirect : $redirect;
-        header('Location: ' . $url);
+function requireAuth($redirect = '/login.php') {
+    if (!authUser()) {
+        header("Location: " . BASE_URL . $redirect);
         exit;
     }
 }
 
-function requireRole(string $role, string $redirect = '/login.php'): void {
-    requireLogin($redirect);
-    if (authRole() !== $role && authRole() !== 'admin') {
-        $base = defined('BASE_URL') ? BASE_URL : '';
-        $url = str_starts_with($redirect, '/') ? $base . $redirect : $redirect;
-        header('Location: ' . $url);
+function requireRole($role, $redirect = '/login.php') {
+    $user = authUser();
+    if (!$user) {
+        header("Location: " . BASE_URL . $redirect);
+        exit;
+    }
+    if ($user['role'] !== $role && $user['role'] !== 'admin') {
+        header("Location: " . BASE_URL . $redirect);
         exit;
     }
 }
 
-// ---------- actions ----------
-
-function loginUser(array $user): void {
-    session_regenerate_id(true);
-    $_SESSION['auth_user'] = $user;
+function requireAdmin($redirect = '/login.php') {
+    requireRole('admin', $redirect);
 }
 
-function logoutUser(): void {
-    $_SESSION = [];
-    if (ini_get('session.use_cookies')) {
-        $p = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+function login($email, $password) {
+    $user = dbOne("SELECT * FROM users WHERE email = ?", [$email]);
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user'] = $user;
+        // Update last login
+        dbExec("UPDATE users SET last_login = NOW() WHERE id = ?", [$user['id']]);
+        return true;
     }
+    return false;
+}
+
+function logout() {
+    unset($_SESSION['user']);
+    setcookie('remember_token', '', time() - 3600, '/');
     session_destroy();
-}
-
-// ---------- role redirect after login ----------
-
-function roleHome(string $role): string {
-    $base = defined('BASE_URL') ? BASE_URL : '';
-    return $base . match($role) {
-        'admin'      => '/admin/',
-        'researcher' => '/researcher/',
-        'student'    => '/student/',
-        'donor'      => '/donor/',
-        default      => '/login.php',
-    };
 }
