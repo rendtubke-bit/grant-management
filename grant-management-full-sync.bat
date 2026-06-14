@@ -6,7 +6,7 @@ cd /d H:\MAMP\htdocs\grant-management
 echo ========================================
 echo   Grant Management Full Auto Sync
 echo ========================================
-echo   Syncing every 60 seconds...
+echo "Syncing every 4 minutes...";
 echo   Press Ctrl + C to stop
 echo ========================================
 
