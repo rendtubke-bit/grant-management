@@ -3,7 +3,6 @@ require_once dirname(__DIR__) . '/includes/auth_check.php';
 
 $pageTitle = t('dashboard');
 
-// Stats from DB (with fallback mock data)
 $totalGrants    = (int)(dbVal('SELECT COUNT(*) FROM grants') ?: 10);
 $activeProjects = (int)(dbVal('SELECT COUNT(*) FROM projects WHERE status="active"') ?: 4);
 $totalFunding   = (float)(dbVal('SELECT SUM(amount) FROM grants WHERE status NOT IN ("rejected","pending")') ?: 5200000);
@@ -24,10 +23,6 @@ if (!$recentGrants) {
 $monthlyData = [3,5,4,7,6,8,5,9,7,11,8,10];
 $months_ar   = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 $months_en   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-include dirname(__DIR__) . '/includes/header.php';
-include dirname(__DIR__) . '/includes/sidebar.php';
-include dirname(__DIR__) . '/includes/app_header.php';
 ?>
 
 <!-- STATS -->
@@ -39,10 +34,10 @@ include dirname(__DIR__) . '/includes/app_header.php';
     ['icon'=>'bi-cash-stack',             'color'=>'#f59e0b','value'=>number_format($totalFunding/1000000,1).'M', 'ar'=>'إجمالي التمويل (ريال)','en'=>'Total Funding (SAR)', 'change'=>'+8.4%'],
     ['icon'=>'bi-hourglass-split',        'color'=>'#ef4444','value'=>$pendingCount,           'ar'=>'بانتظار الموافقة',     'en'=>'Pending Approvals',  'change'=>'-2'],
   ];
-  foreach($stats as $i=>$s): ?>
+  foreach($stats as $s): ?>
   <div class="col-sm-6 col-xl-3">
     <div class="stat-card">
-      <div class="stat-icon" style="background:<?=$s['color']?>22;color:<?=$s['color']?>">
+      <div class="stat-icon" style="background:<?=$s['color']?>22;color:<?=$s['color']?>;border-color:<?=$s['color']?>">
         <i class="bi <?=$s['icon']?>"></i>
       </div>
       <div class="stat-info">
@@ -68,7 +63,7 @@ include dirname(__DIR__) . '/includes/app_header.php';
           <?= $isRTL ? 'الطلبات الشهرية' : 'Monthly Applications' ?>
         </h5>
       </div>
-      <div class="card-custom-body" style="padding:16px">
+      <div class="card-custom-body">
         <canvas id="monthlyChart" height="240"></canvas>
       </div>
     </div>
@@ -81,9 +76,9 @@ include dirname(__DIR__) . '/includes/app_header.php';
           <?= $isRTL ? 'توزيع أنواع المنح' : 'Grant Distribution' ?>
         </h5>
       </div>
-      <div class="card-custom-body" style="padding:16px">
+      <div class="card-custom-body">
         <canvas id="donutChart" height="210"></canvas>
-        <div class="row g-2 mt-2">
+        <div class="row g-2 mt-3">
           <?php
           $types = [
             ['ar'=>'بحثية','en'=>'Research','pct'=>40,'color'=>'#6366f1'],
@@ -93,8 +88,8 @@ include dirname(__DIR__) . '/includes/app_header.php';
           ];
           foreach($types as $t): ?>
           <div class="col-6">
-            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary)">
-              <span style="width:10px;height:10px;border-radius:50%;background:<?=$t['color']?>;flex-shrink:0"></span>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);">
+              <span style="width:12px;height:12px;border-radius:50%;background:<?=$t['color']?>;flex-shrink:0;border:2px solid #000;"></span>
               <?= $isRTL ? $t['ar'] : $t['en'] ?> (<?=$t['pct']?>%)
             </div>
           </div>
@@ -109,15 +104,15 @@ include dirname(__DIR__) . '/includes/app_header.php';
 <div class="row g-3 mb-4">
   <?php
   $actions = [
-    ['icon'=>'bi-plus-circle-fill','color'=>'#6366f1','ar'=>'طلب منحة جديد',     'en'=>'New Grant Request',      'href'=>'/admin/?page=grants'],
-    ['icon'=>'bi-journal-plus',    'color'=>'#10b981','ar'=>'إضافة مشروع',        'en'=>'Add Project',            'href'=>'/admin/?page=projects'],
-    ['icon'=>'bi-people-fill',     'color'=>'#f59e0b','ar'=>'إدارة المستخدمين',  'en'=>'Manage Users',           'href'=>'/admin/?page=users'],
-    ['icon'=>'bi-download',        'color'=>'#8b5cf6','ar'=>'تصدير التقارير',     'en'=>'Export Reports',         'href'=>'/admin/?page=reports'],
+    ['icon'=>'bi-plus-circle-fill','color'=>'#6366f1','ar'=>'طلب منحة جديد',     'en'=>'New Grant Request',      'href'=>'?page=grants'],
+    ['icon'=>'bi-journal-plus',    'color'=>'#10b981','ar'=>'إضافة مشروع',        'en'=>'Add Project',            'href'=>'?page=projects'],
+    ['icon'=>'bi-people-fill',     'color'=>'#f59e0b','ar'=>'إدارة المستخدمين',  'en'=>'Manage Users',           'href'=>'?page=users'],
+    ['icon'=>'bi-download',        'color'=>'#8b5cf6','ar'=>'تصدير التقارير',     'en'=>'Export Reports',         'href'=>'?page=reports'],
   ];
   foreach($actions as $a): ?>
   <div class="col-sm-6 col-xl-3">
     <a href="<?=$a['href']?>" class="quick-action-btn" style="--qa-color:<?=$a['color']?>">
-      <i class="bi <?=$a['icon']?>" style="font-size:20px;color:<?=$a['color']?>"></i>
+      <i class="bi <?=$a['icon']?>" style="font-size:24px;color:<?=$a['color']?>"></i>
       <span><?= $isRTL ? $a['ar'] : $a['en'] ?></span>
     </a>
   </div>
@@ -131,7 +126,7 @@ include dirname(__DIR__) . '/includes/app_header.php';
       <i class="bi bi-clock-history" style="color:#f59e0b"></i>
       <?= $isRTL ? 'المنح الأخيرة' : 'Recent Grants' ?>
     </h5>
-    <a href="<?= BASE_URL ?>/admin/?page=grants" class="btn-sm-outline">
+    <a href="?page=grants" class="btn-sm-outline">
       <?= $isRTL ? 'عرض الكل' : 'View All' ?>
       <i class="bi bi-arrow-<?= $isRTL ? 'left' : 'right' ?>"></i>
     </a>
@@ -140,11 +135,11 @@ include dirname(__DIR__) . '/includes/app_header.php';
     <table class="custom-table">
       <thead>
         <tr>
-          <th><?= $isRTL ? 'العنوان' : 'Title' ?></th>
-          <th><?= $isRTL ? 'مقدم الطلب' : 'Applicant' ?></th>
-          <th><?= $isRTL ? 'المبلغ' : 'Amount' ?></th>
-          <th><?= $isRTL ? 'تاريخ التقديم' : 'Date' ?></th>
-          <th><?= $isRTL ? 'الحالة' : 'Status' ?></th>
+          <th data-label="<?= $isRTL ? 'العنوان' : 'Title' ?>"><?= $isRTL ? 'العنوان' : 'Title' ?></th>
+          <th data-label="<?= $isRTL ? 'مقدم الطلب' : 'Applicant' ?>"><?= $isRTL ? 'مقدم الطلب' : 'Applicant' ?></th>
+          <th data-label="<?= $isRTL ? 'المبلغ' : 'Amount' ?>"><?= $isRTL ? 'المبلغ' : 'Amount' ?></th>
+          <th data-label="<?= $isRTL ? 'تاريخ التقديم' : 'Date' ?>"><?= $isRTL ? 'تاريخ التقديم' : 'Date' ?></th>
+          <th data-label="<?= $isRTL ? 'الحالة' : 'Status' ?>"><?= $isRTL ? 'الحالة' : 'Status' ?></th>
         </tr>
       </thead>
       <tbody>
@@ -160,13 +155,13 @@ include dirname(__DIR__) . '/includes/app_header.php';
           $s = $statusMap[$g['status']] ?? ['ar'=>$g['status'],'en'=>$g['status'],'class'=>'badge-secondary'];
         ?>
         <tr>
-          <td style="font-weight:600;color:var(--text-primary)">
+          <td data-label="<?= $isRTL ? 'العنوان' : 'Title' ?>" style="font-weight:700;color:var(--text-primary)">
             <?= htmlspecialchars($isRTL ? $g['title_ar'] : $g['title_en']) ?>
           </td>
-          <td style="color:var(--text-secondary)"><?= htmlspecialchars($g['applicant_name'] ?? '—') ?></td>
-          <td style="font-weight:600;color:var(--text-primary)"><?= number_format($g['amount']) ?> <?= $isRTL?'ريال':'SAR' ?></td>
-          <td style="color:var(--text-muted)"><?= $g['submission_date'] ?></td>
-          <td><span class="badge-status <?= $s['class'] ?>"><?= $isRTL ? $s['ar'] : $s['en'] ?></span></td>
+          <td data-label="<?= $isRTL ? 'مقدم الطلب' : 'Applicant' ?>" style="color:var(--text-secondary)"><?= htmlspecialchars($g['applicant_name'] ?? '—') ?></td>
+          <td data-label="<?= $isRTL ? 'المبلغ' : 'Amount' ?>" style="font-weight:700;color:var(--text-primary)"><?= number_format($g['amount']) ?> <?= $isRTL?'ريال':'SAR' ?></td>
+          <td data-label="<?= $isRTL ? 'تاريخ التقديم' : 'Date' ?>" style="color:var(--text-muted)"><?= $g['submission_date'] ?></td>
+          <td data-label="<?= $isRTL ? 'الحالة' : 'Status' ?>"><span class="badge-status <?= $s['class'] ?>"><?= $isRTL ? $s['ar'] : $s['en'] ?></span></td>
         </tr>
         <?php endforeach; ?>
       </tbody>
@@ -216,10 +211,7 @@ new Chart(document.getElementById('donutChart'), {
       hoverOffset: 6,
     }]
   },
-  options: {
-    responsive: true, cutout:'70%',
-    plugins: {legend:{display:false}}
-  }
+  options: {responsive: true, cutout:'70%', plugins: {legend:{display:false}}}
 });
 JS;
-include dirname(__DIR__) . '/includes/footer.php';
+?>
