@@ -4,8 +4,8 @@ $user = authUser();
 $notifCount = (int) dbVal('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0', [$user['id'] ?? 0]);
 if ($notifCount === 0) $notifCount = 3; // fallback for demo
 ?>
-<div class="main-content">
 <header class="app-header">
+  <div class="header-left">
   <div class="d-flex align-items-center gap-3">
     <button class="btn-icon d-lg-none" onclick="openSidebar()">
       <i class="bi bi-list" style="font-size:20px;"></i>
